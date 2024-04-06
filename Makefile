@@ -1,5 +1,12 @@
 DOCKER_COMPOSE := $(if $(shell PATH=$(PATH) command -v docker-compose), docker-compose, docker compose)
 
+clean-build:
+	rm -rf dist
+build: clean-build
+	npm run build
+build-start: build dev-mongodb-up
+	DOTENV_PATH=env-dev npm run start
+
 dev-mongodb-up:
 	$(DOCKER_COMPOSE) up -d mongodb
 dev-down:

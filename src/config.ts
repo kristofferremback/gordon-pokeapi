@@ -1,3 +1,5 @@
+import createLogger, { stdSerializers } from "pino"
+
 export interface Config {
   host: string
   port: number
@@ -12,6 +14,19 @@ export interface Config {
   }
 
   mongoUri: string
+
+  pokeapiUri: string
+}
+
+export const setupLogger = (level: string) => {
+  return createLogger({
+    level,
+    serializers: {
+      err: stdSerializers.err,
+      req: stdSerializers.req,
+      res: stdSerializers.res,
+    },
+  })
 }
 
 export default function getConfig(): Config {
@@ -26,5 +41,6 @@ export default function getConfig(): Config {
       level: process.env.LOG_LEVEL ?? "info",
     },
     mongoUri: process.env.MONGO_URI ?? "mongodb://localhost:27017",
+    pokeapiUri: process.env.POKEAPI_URI ?? "https://pokeapi.co/api/v2",
   }
 }

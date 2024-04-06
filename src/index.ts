@@ -1,12 +1,20 @@
 import dotenv from "dotenv"
-import createLogger, { Logger } from "pino"
+import createLogger, { Logger, stdSerializers } from "pino"
 import { setTimeout } from "timers/promises"
 import { createTerminus } from "@godaddy/terminus"
+import axios from "axios"
 
-import getConfig from "./config"
+import getConfig, { setupLogger } from "./config"
 import { setupApp, run } from "./server"
+import initDb from "./db"
+import mongoose from "mongoose"
+import initRepository from "./db/repository"
+import { initService } from "./service"
+import { createPokeapiClient } from "./clients/pokeapi"
 
-let log: Logger = console
+// Set up global logger in case things goes wrong before
+// we've initialized the application logger.
+let _logger = setupLogger("info")
 
 async function init() {
   const dotenvPath = process.env.DOTENV_PATH ?? ".env"
@@ -14,11 +22,28 @@ async function init() {
 
   const config = getConfig()
 
-  const logger = createLogger({ level: config.logger.level })
+  const logger = setupLogger(config.logger.level)
   // Register the global logger so it can be used in case of errors when initializing the app
-  log = logger
+  _logger = logger
 
   logger.info("starting app")
+
+  await mongoose.connect(config.mongoUri)
+  const db = initDb(mongoose)
+  const repository = initRepository({ models: db.models })
+
+  const pokeapiClient = createPokeapiClient({
+    client: axios.create({ baseURL: config.pokeapiUri }),
+    logger: logger.child({ client: "pokeapi" }),
+  })
+
+  const service = initService({
+    logger: logger.child({ service: "pokemon" }),
+    pokeapiClient: pokeapiClient,
+    repository: repository,
+  })
+
+  await service.indexPokemon()
 
   const app = await setupApp()
   const server = await run({ host: config.host, port: config.port }, app)
@@ -44,6 +69,6 @@ async function init() {
 }
 
 init().catch((err) => {
-  log.error("failed to start app, shutting down", err)
+  _logger.error({ err }, "failed to start app, shutting down")
   process.exit(1)
 })

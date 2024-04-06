@@ -1,22 +1,23 @@
 import http from "http"
 
-import express, { Express, Request, Response } from "express"
+import express, { Express } from "express"
 import { pinoHttp } from "pino-http"
+
+import { Dependencies } from "./types"
+import { setupRouter } from "./router"
 
 interface ServerConfig {
   host: string
   port: number
 }
 
-export async function setupApp(): Promise<Express> {
+export async function setupApp(deps: Dependencies): Promise<Express> {
   const app = express()
 
   app.use(express.json())
   app.use(pinoHttp())
 
-  app.get("/", (req: Request, res: Response) => {
-    res.send("Hello World!")
-  })
+  app.use(setupRouter(deps))
 
   return app
 }

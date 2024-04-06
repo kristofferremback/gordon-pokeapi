@@ -30,7 +30,8 @@ export default function initRepository({ models }: Depencies): Repository {
       const docs = await models.Pokemon.find()
       return docs.map((doc) => doc.id as number)
     },
-    listPokemon: async ({ offset = 0, limit = 100000 }) => {
+    listPokemon: async ({ offset, limit }) => {
+      // TODO: Validate inputs
       const [docs, totalCount] = await Promise.all([
         models.Pokemon.find().skip(offset).limit(limit),
         models.Pokemon.countDocuments(),

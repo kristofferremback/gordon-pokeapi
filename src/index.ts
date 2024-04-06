@@ -1,5 +1,4 @@
 import dotenv from "dotenv"
-import createLogger, { Logger, stdSerializers } from "pino"
 import { setTimeout } from "timers/promises"
 import { createTerminus } from "@godaddy/terminus"
 import axios from "axios"
@@ -60,7 +59,10 @@ async function init() {
     logger.warn({ pokemonCount: ids.length }, "Pokemon data may be incomplete, continuing with what we have")
   }
 
-  const app = await setupApp()
+  const app = await setupApp({
+    logger: logger.child({ app: "router" }),
+    service: service,
+  })
   const server = await run({ host: config.host, port: config.port }, app)
 
   logger.info({ port: config.port }, "Server started")

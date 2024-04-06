@@ -1,19 +1,22 @@
 import { mapLimit } from "async"
+import { Logger } from "pino"
 
 import { PokeApiClient, idFromPokemonUrl } from "../clients/pokeapi"
 import { Repository } from "../db/repository"
-import { Pokemon, PokemonListItem } from "../types"
-import { Logger } from "pino"
+import { Page, Pokemon, PokemonListItem } from "../types"
 
-interface Dependencies {
+export interface Dependencies {
   logger: Logger
   pokeapiClient: PokeApiClient
   repository: Repository
 }
 
-interface Service {
+export interface Service {
   indexPokemon: (reInitialize: boolean) => Promise<void>
   getPokemon: (id: number) => Promise<Pokemon>
+  listPokemon: ({ limit, offset }: { limit?: number; offset?: number }) => Promise<Page<Pokemon>>
+  createPokemon: (pokemon: Pokemon) => Promise<Pokemon>
+  updatePokemon: (pokemon: Pokemon) => Promise<Pokemon>
 }
 
 export function initService(deps: Dependencies): Service {
@@ -79,8 +82,30 @@ export function initService(deps: Dependencies): Service {
     return await repository.getPokemon(id)
   }
 
+  async function listPokemon({ limit, offset }: { limit?: number; offset?: number }) {
+    return await repository.listPokemon({
+      limit: limit ?? 10_000,
+      offset: offset ?? 0,
+    })
+  }
+
+  async function createPokemon(pokemon: Pokemon) {
+    await repository.createPokemon(pokemon)
+    const createdPokemon = await repository.getPokemon(pokemon.id)
+    return createdPokemon
+  }
+
+  async function updatePokemon(pokemon: Pokemon) {
+    await repository.updatePokemon(pokemon)
+    const updatedPokemon = await repository.getPokemon(pokemon.id)
+    return updatedPokemon
+  }
+
   return {
     indexPokemon,
     getPokemon,
+    listPokemon,
+    createPokemon,
+    updatePokemon,
   }
 }

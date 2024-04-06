@@ -9,4 +9,5 @@ module.exports = {
   verbose: true,
   testEnvironment: "node",
   testTimeout: 2000,
+  globalSetup: "./test-setup.ts",
 }

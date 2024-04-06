@@ -1,12 +1,12 @@
-import { Mongoose } from "mongoose"
+import { Connection } from "mongoose"
 
 import Pokemon from "./models/pokemon"
 
-export default function initDb(mongoose: Mongoose) {
+export default function initDb(connection: Connection) {
   return {
-    mongoose,
+    connection,
     models: {
-      Pokemon: Pokemon(mongoose),
+      Pokemon: Pokemon(connection),
     },
   }
 }

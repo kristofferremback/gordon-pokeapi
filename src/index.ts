@@ -27,8 +27,8 @@ async function init() {
 
   logger.info("Starting app")
 
-  await mongoose.connect(config.mongoUri)
-  const db = initDb(mongoose)
+  const conn = await mongoose.createConnection(config.mongoUri)
+  const db = initDb(conn)
   const repository = initRepository({ models: db.models })
 
   const pokeapiClient = createPokeapiClient({
@@ -76,6 +76,8 @@ async function init() {
     onSignal: async () => {
       logger.info("Server is starting cleanup")
       await setTimeout(config.gracefulShutdown.shutdownDelay)
+
+      await conn.close()
 
       logger.info("Cleanup finished, server is shutting down")
     },

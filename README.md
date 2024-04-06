@@ -18,7 +18,51 @@ Comments:
 - Error handling is nice. There is some **very** basic stuff in there (and some TODOs), but overall I'm a fan of using _domain errors_ and using those throughout the app, hiding the implementation details of the error from the client. For example throwing an ErrorPokemonAlreadyExists instead of some obtuse unique constraint error from mongo and then capturing that in the API to return a 409 Conflict if someone tries to create an existing Pokemon.
 - API documentation isn't really there either... I did a quick search and I couldn't find a simple _get a lot from a little_ library (think FastAPI in Python, or the less polished Huma in Go) - it seeme like it was still necessary to write out the API spec in code, comments, or plain YAML (in the few libs I looked at). I've introduced and used Fastify at my current employer (though only with JS) which back then (a few years ago) required writing the API through code (e.g. jsonschema but in JS). It does look like it may have some utilities for generating types (or schema from types?) which would be cool to test! However, the test specified Express so Fastify felt out of the picture.
 
+## Endpoints
+
+### `GET /pokemon`
+
+Returns a list of all Pokemon in the database.
+
+Example:
+
+```bash
+curl "http://localhost:3000/pokemon?offset=0&limit=1000"
+```
+
+### `GET /pokemon/:id`
+
+Returns a single Pokemon by ID.
+
+Example:
+
+```bash
+curl http://localhost:3000/pokemon/1
+```
+
+### `POST /pokemon`
+
+Creates a new Pokemon.
+
+Example:
+
+```bash
+curl -X POST http://localhost:3000/pokemon -d '{"id": 1, "name": "bulbasaur", "base_experience": 64}' -H 'Content-Type: application/json'
+```
+
+### `PUT /pokemon/:id`
+
+Updates an existing Pokemon.
+
+Example:
+
+```bash
+curl -X PUT http://localhost:3000/pokemon/1 -d '{"base_experience": 65}' -H 'Content-Type: application/json'
+```
+
 ## Running locally
+
+The project uses Node.js `v20.12.1` make sure you're using a compatible node version (or use `nvm install` to install the same version I used).
 
 To run locally (against the real pokeapi), the easiest way is to use `make dev`:
 

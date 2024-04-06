@@ -18,7 +18,7 @@ export const createPokeapiClient = ({ client, logger }: Dependencies): PokeApiCl
   }
 
   const baseUri = client.getUri()
-  logger.debug({ baseUri }, "pokeapi client initialized")
+  logger.debug({ baseUri }, "Pokeapi client initialized")
 
   return {
     list: async ({ offset, limit }: { offset: number; limit: number }) => {

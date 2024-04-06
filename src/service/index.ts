@@ -49,6 +49,7 @@ export function initService(deps: Dependencies): Service {
     const newListed = apiPokemonListItems.filter((item) => !existingIds.has(idFromPokemonUrl(item.url)))
 
     const toFetch = reInitialize ? apiPokemonListItems : newListed
+    logger.info({ toFetch: toFetch.length }, "Fetching pokemon")
     const pokemon: Pokemon[] = await mapLimit(toFetch, 10, async (item: PokemonListItem) => {
       return await pokeapiClient.getByUrl(item.url)
     })

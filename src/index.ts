@@ -26,7 +26,7 @@ async function init() {
   // Register the global logger so it can be used in case of errors when initializing the app
   _logger = logger
 
-  logger.info("starting app")
+  logger.info("Starting app")
 
   await mongoose.connect(config.mongoUri)
   const db = initDb(mongoose)
@@ -43,12 +43,27 @@ async function init() {
     repository: repository,
   })
 
-  await service.indexPokemon()
+  try {
+    await service.indexPokemon(false)
+  } catch (err) {
+    if (config.strictIndexing) {
+      throw err
+    }
+
+    logger.error({ err }, "Failed to index pokemon")
+    const ids = await repository.listPokemonIds()
+    if (ids.length === 0) {
+      // There's no data, can't run in possibly partial state.
+      throw err
+    }
+
+    logger.warn({ pokemonCount: ids.length }, "Pokemon data may be incomplete, continuing with what we have")
+  }
 
   const app = await setupApp()
   const server = await run({ host: config.host, port: config.port }, app)
 
-  logger.info({ port: config.port }, "server started")
+  logger.info({ port: config.port }, "Server started")
 
   createTerminus(server, {
     signals: ["SIGINT", "SIGTERM"],
@@ -57,18 +72,18 @@ async function init() {
     },
     timeout: config.gracefulShutdown.timeout,
     onSignal: async () => {
-      logger.info("server is starting cleanup")
+      logger.info("Server is starting cleanup")
       await setTimeout(config.gracefulShutdown.shutdownDelay)
 
-      logger.info("cleanup finished, server is shutting down")
+      logger.info("Cleanup finished, server is shutting down")
     },
     onShutdown: async () => {
-      logger.info("server is shutting down")
+      logger.info("Server is shutting down")
     },
   })
 }
 
 init().catch((err) => {
-  _logger.error({ err }, "failed to start app, shutting down")
+  _logger.error({ err }, "Failed to start app, shutting down")
   process.exit(1)
 })

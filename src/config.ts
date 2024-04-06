@@ -42,7 +42,7 @@ export default function getConfig(): Config {
       level: process.env.LOG_LEVEL ?? "info",
     },
     mongoUri: process.env.MONGO_URI ?? "mongodb://localhost:27017",
-    pokeapiUri: process.env.POKEAPI_URI ?? "https://pokeapi.co/api/v2",
+    pokeapiUri: process.env.POKEAPI_URI ?? "https://pokeapi.co",
     strictIndexing: process.env.POKEAPI_STRICT_INDEXING === "true",
   }
 }

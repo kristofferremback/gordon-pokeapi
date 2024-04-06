@@ -1,6 +1,6 @@
 services:
   mongodb:
     image: mongo:6-jammy
-    container_name: mongodb-dev
+    container_name: mongodb-test
     ports:
-      - "27017:27017"
+      - "27018:27017"

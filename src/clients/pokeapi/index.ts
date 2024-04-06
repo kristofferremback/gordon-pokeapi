@@ -1,4 +1,4 @@
-import axios, { Axios } from "axios"
+import { Axios } from "axios"
 import { Pokemon, PokemonListResult } from "../../types"
 import { Logger } from "pino"
 
@@ -24,7 +24,12 @@ export const createPokeapiClient = ({ client, logger }: Dependencies): PokeApiCl
     list: async ({ offset, limit }: { offset: number; limit: number }) => {
       logger.debug({ offset, limit }, "Listing pokemon")
 
-      const response = await client.get<PokemonListResult>(`/pokemon?offset=${offset}&limit=${limit}`)
+      const response = await client.get<PokemonListResult>(`/api/v2/pokemon`, {
+        params: {
+          offset,
+          limit,
+        },
+      })
 
       logger.debug({ count: response.data.results.length }, "Listed pokemon")
       return response.data
